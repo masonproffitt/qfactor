@@ -1,1 +1,1 @@
-from .factorize import factorize
+from .factoring import factorize
