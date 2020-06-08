@@ -38,7 +38,7 @@ def test_factorize_composite_odd_non_power():
     assert factorize(15) == (3, 5)
 
 
-def test_find_integer_root_bad_input():
+def test_find_integer_root_bad_type():
     with pytest.raises(TypeError):
         find_integer_root('asdf')
 

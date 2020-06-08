@@ -1,8 +1,10 @@
 import math
 
+from .shors_classical import run_shors_algorithm
+
 
 # Factor a number into two smaller numbers or return None if prime
-def factorize(n):
+def factorize(n, p_min=0.95):
     # Ensure that n is an integer
     if n % 1 != 0:
         raise ValueError(f'Input must be an integer; found {n} instead')
@@ -24,9 +26,11 @@ def factorize(n):
     if integer_root is not None:
         return (integer_root, n / integer_root)
 
-    # From here, it is guaranteed that n is an odd integer greater than 1 which is not an integer power higher than 1 of a prime
+    # From here, it is guaranteed that n is an odd integer greater than 1
+    # and is not an integer power higher than 1 of a prime
 
-    raise NotImplementedError('Full factorization algorithm not yet implemented')
+    # Execute Shor's algorithm for n
+    return run_shors_algorithm(n, p_min)
 
 
 # Search for an integer root
