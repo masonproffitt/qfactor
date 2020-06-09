@@ -13,13 +13,19 @@ def run_shors_algorithm(n, p_min):
 
     p = 0
     while p < p_min:
-        x = random.randrange(1, n)
-        r = get_order(x, n)
-        if r % 2 == 0 and x ** (r / 2) % n != n - 1:
-            lesser_factor = math.gcd(x ** (r / 2) - 1, n)
-            return (lesser_factor, n / lesser_factor)
+        x = random.randrange(2, n)
+        factor = math.gcd(x, n)
+        if factor != 1:
+            factors = [factor, n / factor]
+            factors.sort()
+            return tuple(factors)
         else:
-            p = calculate_new_primality_confidence(p)
+            r = get_order(x, n)
+            if r % 2 == 0 and x ** (r / 2) % n != n - 1:
+                lesser_factor = math.gcd(x ** (r / 2) - 1, n)
+                return (lesser_factor, n / lesser_factor)
+            else:
+                p = calculate_new_primality_confidence(p)
 
     return None
 
