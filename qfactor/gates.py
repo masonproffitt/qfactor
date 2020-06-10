@@ -23,11 +23,9 @@ class QFT(qiskit.QuantumCircuit):
         reverse_qubits(self)
 
 
-class FixedAdder(qiskit.QuantumCircuit):
+class FixedQFTAdder(qiskit.QuantumCircuit):
     def __init__(self, n_qubits, c):
-        super().__init__(n_qubits, name=f'FixedAdder({c})')
-        qft = QFT(n_qubits).to_gate()
-        self.append(qft, self.qubits)
+        super().__init__(n_qubits, name=f'FixedQFTAdder({c})')
         for i in range(n_qubits):
             reciprocal_sum = 0
             for j in range(n_qubits - 1 - i, -1, -1):
@@ -36,31 +34,38 @@ class FixedAdder(qiskit.QuantumCircuit):
                     reciprocal_sum += 2 ** -k
             if reciprocal_sum != 0:
                 self.u1(2 * math.pi * reciprocal_sum, i)
-        self.append(qft.inverse(), self.qubits)
 
 
-class ModularFixedAdder(qiskit.QuantumCircuit):
+class ModularFixedQFTAdder(qiskit.QuantumCircuit):
     def __init__(self, n_data_qubits, c, n):
-        super().__init__(n_data_qubits + 2, name=f'ModularFixedAdder({c}) mod {n}')
-        fixed_adder_c = FixedAdder(n_data_qubits + 1, c).to_gate()
+        super().__init__(n_data_qubits + 2, name=f'ModularFixedQFTAdder({c}) mod {n}')
+        fixed_adder_c = FixedQFTAdder(n_data_qubits + 1, c).to_gate()
         self.append(fixed_adder_c, self.qubits[:-1])
-        fixed_adder_n = FixedAdder(n_data_qubits + 1, n).to_gate()
+        fixed_adder_n = FixedQFTAdder(n_data_qubits + 1, n).to_gate()
         self.append(fixed_adder_n.inverse(), self.qubits[:-1])
+        qft = QFT(n_data_qubits + 1).to_gate()
+        self.append(qft.inverse(), self.qubits[:-1])
         self.cx(n_data_qubits, n_data_qubits + 1)
+        self.append(qft, self.qubits[:-1])
         self.append(fixed_adder_n.control(1), [self.qubits[-1]] + self.qubits[:-1])
         self.append(fixed_adder_c.inverse(), self.qubits[:-1])
+        self.append(qft.inverse(), self.qubits[:-1])
         self.x(n_data_qubits)
         self.cx(n_data_qubits, n_data_qubits + 1)
         self.x(n_data_qubits)
+        self.append(qft, self.qubits[:-1])
         self.append(fixed_adder_c, self.qubits[:-1])
 
 
 class PartialModularFixedMultiplier(qiskit.QuantumCircuit):
     def __init__(self, n_data_qubits, c, n):
         super().__init__(2 * n_data_qubits + 2, name=f'PartialModularFixedMultiplier({c}) mod {n}')
+        qft = QFT(n_data_qubits + 1).to_gate()
+        self.append(qft, self.qubits[n_data_qubits:-1])
         for i in range(n_data_qubits):
-            self.append(ModularFixedAdder(n_data_qubits, 2 ** i * c, n).to_gate().control(1),
+            self.append(ModularFixedQFTAdder(n_data_qubits, 2 ** i * c, n).to_gate().control(1),
                         [self.qubits[i]] + self.qubits[n_data_qubits:])
+        self.append(qft.inverse(), self.qubits[n_data_qubits:-1])
 
 
 def get_modular_inverse(a, n):
