@@ -3,10 +3,6 @@ import math
 import qiskit
 
 
-def add_Rk(qc, k, target):
-    qc.u1(2 * math.pi / 2 ** k, target)
-
-
 def add_CRk(qc, k, control, target):
     qc.cu1(2 * math.pi / 2 ** k, control, target)
 
@@ -33,10 +29,13 @@ class FixedAdder(qiskit.QuantumCircuit):
         qft = QFT(n_qubits).to_gate()
         self.append(qft, self.qubits)
         for i in range(n_qubits):
+            reciprocal_sum = 0
             for j in range(n_qubits - 1 - i, -1, -1):
                 if c & 2 ** j:
                     k = n_qubits - i - j
-                    add_Rk(self, k, i)
+                    reciprocal_sum += 2 ** -k
+            if reciprocal_sum != 0:
+                self.u1(2 * math.pi * reciprocal_sum, i)
         self.append(qft.inverse(), self.qubits)
 
 
