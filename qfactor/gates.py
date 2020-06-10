@@ -98,6 +98,7 @@ class ModularFixedExponentiator(qiskit.QuantumCircuit):
     def __init__(self, n_exponent_qubits, n_base_qubits, x, n):
         super().__init__(n_exponent_qubits + 2 * n_base_qubits + 2,
                          name=f'ModularFixedExponentiator({x}) mod {n}')
+        self.x(n_exponent_qubits)
         for i in range(n_exponent_qubits):
             self.append(ModularFixedMultiplier(n_base_qubits,
                                                x ** (2 ** i),
