@@ -1,5 +1,9 @@
 import math
 
+import qiskit
+
+from .gates import ModularFixedExponentiator
+
 
 def get_order(x, n):
     q = get_q(n)
@@ -16,7 +20,26 @@ def get_q(n):
 
 
 def get_c(x, n, q):
-    raise NotImplementedError('Quantum part of algorithm not yet implemented')
+    first_register = qiskit.QuantumRegister(get_min_n_bits(q))
+    second_register = qiskit.QuantumRegister(get_min_n_bits(n))
+    ancilla_register = qiskit.QuantumRegister(get_min_n_bits(n) + 2)
+    measurement_register = qiskit.ClassicalRegister(first_register.size)
+    circuit = qiskit.QuantumCircuit(first_register,
+                                    second_register,
+                                    ancilla_register,
+                                    measurement_register)
+    circuit.h(first_register)
+    circuit.append(ModularFixedExponentiator(first_register.size, second_register.size, x, n),
+                   circuit.qubits)
+    circuit.measure(first_register, measurement_register)
+    backend = qiskit.Aer.get_backend('qasm_simulator')
+    job = qiskit.execute(circuit, backend, shots=1)
+    result = job.result()
+    return int(list(result.get_counts(circuit))[0], 2)
+
+
+def get_min_n_bits(value):
+    return math.ceil(math.log2(value))
 
 
 def find_nearest_fraction(original_number, max_denominator):
