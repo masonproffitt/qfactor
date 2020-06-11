@@ -95,7 +95,7 @@ def test_QFT_2bits():
     initialize_to_value(qc, 1)
     qc.append(QFT(qc.num_qubits), qc.qubits)
     statevector = run(qc)
-    assert cmath.isclose(cmath.phase(statevector[0]), 0, abs_tol=1e-9)
+    assert abs(cmath.phase(statevector[0])) < 1e-9
     assert cmath.isclose(cmath.phase(statevector[1]), math.pi / 2)
     assert cmath.isclose(abs(cmath.phase(statevector[2])), math.pi)
     assert cmath.isclose(cmath.phase(statevector[3]), -math.pi / 2)

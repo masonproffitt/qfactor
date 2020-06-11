@@ -21,7 +21,7 @@ def test_factorize_bad_value():
 
 def test_factorize_prime():
     assert factorize(2) is None
-    assert factorize(11) is None
+    assert factorize(3) is None
 
 
 def test_factorize_composite_even():

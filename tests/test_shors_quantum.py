@@ -16,6 +16,16 @@ def test_get_order_bad_value():
         get_order(0, 15)
     with pytest.raises(ValueError):
         get_order(0.5, 15)
+    with pytest.raises(ValueError):
+        get_order(1, 15)
+    with pytest.raises(ValueError):
+        get_order(2, -1)
+    with pytest.raises(ValueError):
+        get_order(2, 0)
+    with pytest.raises(ValueError):
+        get_order(2, 0.5)
+    with pytest.raises(ValueError):
+        get_order(2, 2)
 
 
 def test_get_order_good():

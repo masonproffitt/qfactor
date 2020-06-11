@@ -6,6 +6,12 @@ from .gates import get_min_n_bits_for_modulus, ModularFixedExponentiator, QFT
 
 
 def get_order(x, n):
+    if n % 1 != 0 or n < 3:
+        raise ValueError(f'n must be an integer greater than 2; found {n} instead')
+
+    if x % 1 != 0 or x < 2 or x >= n:
+        raise ValueError(f'x must be an integer in [2, n); found {x} instead')
+
     q = get_q(n)
 
     print(f'Attempting to find the order of {x} relative to {n}...')
@@ -73,7 +79,7 @@ def find_nearest_fraction(original_number, max_denominator):
         integer_part = math.floor(current_number)
         fractional_part = current_number % 1
         expansion.append(integer_part)
-        if math.isclose(fractional_part, 0, abs_tol=1e-9) or get_fraction(expansion)[1] >= max_denominator:
+        if fractional_part < 1e-9 or get_fraction(expansion)[1] >= max_denominator:
             break
         else:
             current_number = fractional_part ** -1
