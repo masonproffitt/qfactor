@@ -22,8 +22,10 @@ def run_shors_algorithm(n, p_min):
         else:
             r = get_order(x, n)
             if r % 2 == 0 and x ** (r // 2) % n != n - 1:
-                lesser_factor = math.gcd(x ** (r // 2) - 1, n)
-                return (lesser_factor, n // lesser_factor)
+                factor = math.gcd(x ** (r // 2) - 1, n)
+                factors = [factor, n // factor]
+                factors.sort()
+                return tuple(factors)
             else:
                 p = calculate_new_primality_confidence(p)
 
