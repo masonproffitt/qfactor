@@ -19,12 +19,12 @@ def factorize(n, p_min=0.95):
 
     # Otherwise, if n is even, factoring is nearly trivial
     elif n % 2 == 0:
-        return (2, n / 2)
+        return (2, n // 2)
 
     # Handle the case of an integer power of an integer
     integer_root = find_integer_root(n)
     if integer_root is not None:
-        return (integer_root, n / integer_root)
+        return (integer_root, n // integer_root)
 
     # From here, it is guaranteed that n is an odd integer greater than 1
     # and is not an integer power higher than 1 of a prime
