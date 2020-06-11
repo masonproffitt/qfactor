@@ -19,7 +19,8 @@ def run_shors_algorithm(n, p_min):
     while p < p_min:
         # First step is to pick a random x
         x = random.randrange(2, n)
-        # If x shares a factor with n, we're already done
+
+        # If x shares a non-trivial factor with n, we're already done
         factor = math.gcd(x, n)
         if factor != 1:
             factors = [factor, n // factor]
