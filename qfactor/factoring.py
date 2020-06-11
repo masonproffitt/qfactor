@@ -1,5 +1,3 @@
-import math
-
 from .shors_classical import run_shors_algorithm
 
 
@@ -35,13 +33,27 @@ def factorize(n, p_min=0.95):
 
 # Search for an integer root
 def find_integer_root(n):
+    # Imaginary roots are not integers
     if n < 0:
         return None
+    # Technically 0 or 1 to any positive power equals itself
     elif n == 0 or n == 1:
         return n
     else:
-        for j in range(2, math.floor(math.log2(n)) + 1):
+        # Check whether each root is an integer.
+        # We can stop when the root is less than 2, since higher
+        # roots will only asymptotically approach one.
+        j = 2
+        while True:
             root = n ** (j ** -1)
+            if root < 2:
+                break
+
+            # If the root is an integer, return this root
             if root % 1 == 0:
                 return int(root)
+
+            j += 1
+
+        # No roots were integers, so return nothing
         return None
