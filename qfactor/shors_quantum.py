@@ -2,17 +2,31 @@ import math
 
 import qiskit
 
-from .gates import ModularFixedExponentiator
+from .gates import get_min_n_bits_for_modulus, ModularFixedExponentiator, QFT
 
 
 def get_order(x, n):
     q = get_q(n)
 
+    print(f'Attempting to find the order of {x} relative to {n}...')
+
     while True:
         c = get_c(x, n, q)
+
+        print(f'Quantum circuit measurement led to a value of {c}.')
+
+        if c == 0:
+            print('Zero value does not allow for estimation of the order. Retrying...')
+
         r_candidate = find_nearest_fraction(c / q, n - 1)[1]
+
+        print(f'By continued fraction expansion, this suggests an order of {r_candidate}.')
+
         if x ** r_candidate % n == 1:
+            print(f'Verified that {r_candidate} is the order of {x} relative to {n}.')
             return r_candidate
+        else:
+            print(f'{r_candidate} is not the order of {x} relative to {n}. Retrying...')
 
 
 def get_q(n):
@@ -20,9 +34,14 @@ def get_q(n):
 
 
 def get_c(x, n, q):
-    first_register = qiskit.QuantumRegister(get_min_n_bits(q))
-    second_register = qiskit.QuantumRegister(get_min_n_bits(n))
-    ancilla_register = qiskit.QuantumRegister(get_min_n_bits(n) + 2)
+    result = get_circuit_result(x, n, q, 1)
+    return int(list(result.get_counts())[0], 2)
+
+
+def get_circuit_result(x, n, q, shots):
+    first_register = qiskit.QuantumRegister(get_min_n_bits_for_modulus(q))
+    second_register = qiskit.QuantumRegister(get_min_n_bits_for_modulus(n))
+    ancilla_register = qiskit.QuantumRegister(get_min_n_bits_for_modulus(n) + 2)
     measurement_register = qiskit.ClassicalRegister(first_register.size)
     circuit = qiskit.QuantumCircuit(first_register,
                                     second_register,
@@ -31,15 +50,12 @@ def get_c(x, n, q):
     circuit.h(first_register)
     circuit.append(ModularFixedExponentiator(first_register.size, second_register.size, x, n),
                    circuit.qubits)
+    circuit.append(QFT(first_register.size), first_register)
     circuit.measure(first_register, measurement_register)
     backend = qiskit.Aer.get_backend('qasm_simulator')
-    job = qiskit.execute(circuit, backend, shots=1)
+    job = qiskit.execute(circuit, backend, shots=shots)
     result = job.result()
-    return int(list(result.get_counts(circuit))[0], 2)
-
-
-def get_min_n_bits(value):
-    return math.ceil(math.log2(value))
+    return result
 
 
 def find_nearest_fraction(original_number, max_denominator):
@@ -57,7 +73,7 @@ def find_nearest_fraction(original_number, max_denominator):
         integer_part = math.floor(current_number)
         fractional_part = current_number % 1
         expansion.append(integer_part)
-        if fractional_part == 0 or get_fraction(expansion)[1] >= max_denominator:
+        if math.isclose(fractional_part, 0, abs_tol=1e-9) or get_fraction(expansion)[1] >= max_denominator:
             break
         else:
             current_number = fractional_part ** -1
