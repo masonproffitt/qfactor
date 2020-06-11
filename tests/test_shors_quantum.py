@@ -1,6 +1,6 @@
 import pytest
 
-from qfactor.shors_quantum import get_order, get_q, find_nearest_fraction, get_fraction
+from qfactor.shors_quantum import *
 
 
 def test_get_order_bad_type():

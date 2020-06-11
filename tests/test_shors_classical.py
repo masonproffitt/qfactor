@@ -1,6 +1,6 @@
 import pytest
 
-from qfactor.shors_classical import run_shors_algorithm, calculate_new_primality_confidence
+from qfactor.shors_classical import *
 
 
 def test_shors_algorithm_bad_type():

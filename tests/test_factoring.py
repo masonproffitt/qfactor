@@ -1,6 +1,6 @@
 import pytest
 
-from qfactor.factoring import factorize, find_integer_root
+from qfactor.factoring import *
 
 
 def test_factorize_bad_type():
