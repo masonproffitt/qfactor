@@ -53,17 +53,21 @@ class QFT(qiskit.QuantumCircuit):
 class FixedQFTAdder(qiskit.QuantumCircuit):
     def __init__(self, n_qubits, c):
         super().__init__(n_qubits, name=f'FixedQFTAdder({c})')
+
         # Loop over each input qubit
         for i in range(n_qubits):
             # Variable to keep track of total phase to apply to the current qubit
             reciprocal_sum = 0
+
             # Loop over bits of c
             for j in range(n_qubits - 1 - i, -1, -1):
                 # Action is controlled by value in current bit position of c
                 if c & 2 ** j:
                     k = n_qubits - i - j
+
                     # Add effect of current bit of c to this qubit
                     reciprocal_sum += 2 ** -k
+
             # Apply the cumulative action of all bits of c to the current qubit
             self.u1(2 * math.pi * reciprocal_sum, self.qubits[i])
 
@@ -109,21 +113,32 @@ class CCModularFixedQFTAdder(qiskit.QuantumCircuit):
         self.append(fixed_adder_c.control(2), self.qubits[:-1])
 
 
+# Controlled gate which maps |x>|b> to |x>|(b + x * c) % n> where c and n are compiled into the circuit
 class CPartialModularFixedMultiplier(qiskit.QuantumCircuit):
     def __init__(self, n_data_qubits, c, n):
         super().__init__(1 + 2 * n_data_qubits + 2,
                          name=f'CPartialModularFixedMultiplier({c}) mod {n}')
+
+        # Construct the required QFT gate
         qft = QFT(n_data_qubits + 1).to_gate()
+
+        # Apply QFT since adder circuit is in Fourier space
         self.append(qft, self.qubits[-(n_data_qubits + 2):-1])
+
+        # Loop over data qubits
         for i in range(n_data_qubits):
+            # Apply an adder of 2 ** i * c controlled by the ith data qubit
             self.append(CCModularFixedQFTAdder(n_data_qubits, 2 ** i * c, n).to_gate(),
                         ([self.qubits[0]]
                          + [self.qubits[1 + i]]
                          + self.qubits[-(n_data_qubits + 2):]))
+
+        # Invert QFT
         self.append(qft.inverse(), self.qubits[-(n_data_qubits + 2):-1])
 
 
-# Euclidean algorithm for finding modular inverse of a relative to n (such that a * a^-1 % n == 1)
+# Euclidean algorithm for finding modular inverse of a relative to n (such that a * a^-1 % n == 1).
+# Adapted from https://en.wikipedia.org/w/index.php?title=Extended_Euclidean_algorithm&oldid=949971910#Modular_integers
 def get_modular_inverse(a, n):
     t = 0
     new_t = 1
@@ -144,7 +159,7 @@ def get_modular_inverse(a, n):
     return t
 
 
-# Controlled gate which maps |b> to |b * c % n> where c and an are compiled into the circuit
+# Controlled gate which maps |b> to |b * c % n> where c and n are compiled into the circuit
 class CModularFixedMultiplier(qiskit.QuantumCircuit):
     def __init__(self, n_data_qubits, c, n):
         super().__init__(1 + 2 * n_data_qubits + 2, name=f'CModularFixedMultiplier({c}) mod {n}')
