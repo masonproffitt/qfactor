@@ -113,7 +113,8 @@ class CCModularFixedQFTAdder(qiskit.QuantumCircuit):
         self.append(fixed_adder_c.control(2), self.qubits[:-1])
 
 
-# Controlled gate which maps |x>|b> to |x>|(b + x * c) % n> where c and n are compiled into the circuit
+# Controlled gate which maps |x>|b> to |x>|(b + x * c) % n>
+# where c and n are compiled into the circuit
 class CPartialModularFixedMultiplier(qiskit.QuantumCircuit):
     def __init__(self, n_data_qubits, c, n):
         super().__init__(1 + 2 * n_data_qubits + 2,
@@ -138,7 +139,8 @@ class CPartialModularFixedMultiplier(qiskit.QuantumCircuit):
 
 
 # Euclidean algorithm for finding modular inverse of a relative to n (such that a * a^-1 % n == 1).
-# Adapted from https://en.wikipedia.org/w/index.php?title=Extended_Euclidean_algorithm&oldid=949971910#Modular_integers
+# Adapted from:
+# https://en.wikipedia.org/w/index.php?title=Extended_Euclidean_algorithm&oldid=949971910
 def get_modular_inverse(a, n):
     t = 0
     new_t = 1
